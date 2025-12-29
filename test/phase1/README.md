@@ -8,16 +8,53 @@
 - Socket编程
 - 并发处理
 
-## 练习项目
+## 练习模块
 
-### 1. TCP Echo Server (`01-tcp-echo-server.go`)
+本阶段的练习以Go包的形式提供，可以导入使用或运行测试。
 
-**功能**: 实现一个简单的TCP回显服务器
+### 1. TCP Echo Server
 
-**运行方式**:
+**文件**: `tcp_echo.go`, `tcp_echo_test.go`
+
+**功能**: TCP回显服务器实现
+
+**使用方式**:
+
+```go
+package main
+
+import (
+    "log"
+    "time"
+    "github.com/pcong/pyneco/test/phase1"
+)
+
+func main() {
+    // 创建服务器
+    server := phase1.NewTCPEchoServer("8080")
+
+    // 异步启动
+    err := server.StartAsync()
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    // 运行测试
+    time.Sleep(10 * time.Second)
+    server.Stop()
+}
+```
+
+**运行测试**:
 ```bash
-# 启动服务器
-go run 01-tcp-echo-server.go 8080
+cd test/phase1
+go test -v -run TestTCPEchoServer
+```
+
+**手动测试**:
+```bash
+# 先运行一个简单的服务器示例
+go run ../../examples/tcp_echo_example.go
 
 # 使用telnet测试
 telnet localhost 8080
@@ -40,20 +77,29 @@ telnet localhost 8080
 
 ---
 
-### 2. UDP Chat (`02-udp-chat.go`)
+### 2. UDP Chat
 
-**功能**: 实现一个基于UDP的简单聊天室
+**文件**: `udp_chat.go`, `udp_chat_test.go`
 
-**运行方式**:
+**功能**: UDP聊天服务器和客户端实现
+
+**使用方式**:
+
+```go
+// 服务器
+server := phase1.NewUDPChatServer(":9000")
+go server.Start()
+
+// 客户端
+client, _ := phase1.NewUDPChatClient("localhost:9009", "Alice")
+client.Connect()
+client.SendMessage("Hello")
+```
+
+**运行测试**:
 ```bash
-# 终端1 - 启动服务器
-go run 02-udp-chat.go server :9000
-
-# 终端2 - 客户端1
-go run 02-udp-chat.go client localhost:9000 Alice
-
-# 终端3 - 客户端2
-go run 02-udp-chat.go client localhost:9000 Bob
+cd test/phase1
+go test -v -run TestUDPChat
 ```
 
 **学习要点**:
@@ -77,20 +123,29 @@ go run 02-udp-chat.go client localhost:9000 Bob
 
 ---
 
-### 3. Port Forward (`03-port-forward.go`)
+### 3. Port Forward
 
-**功能**: 实现TCP端口转发工具（类似nc）
+**文件**: `port_forward.go`, `port_forward_test.go`
 
-**运行方式**:
+**功能**: TCP端口转发器实现
+
+**使用方式**:
+
+```go
+// 创建转发器
+forwarder := phase1.NewPortForwarder("8080", "localhost", "3000")
+
+// 异步启动
+err := forwarder.StartAsync()
+if err != nil {
+    log.Fatal(err)
+}
+```
+
+**运行测试**:
 ```bash
-# 先启动一个简单的echo服务器作为目标
-go run 01-tcp-echo-server.go 3000
-
-# 在另一个终端启动转发器
-go run 03-port-forward.go 8080 localhost 3000
-
-# 通过转发器访问
-telnet localhost 8080
+cd test/phase1
+go test -v -run TestPortForwarder
 ```
 
 **学习要点**:
@@ -106,12 +161,19 @@ telnet localhost 8080
 - [ ] 能处理多个并发连接
 
 **扩展练习**:
-1. 添加流量统计（转发的字节数）
+1. 添加流量统计（使用StatsPortForwarder）
 2. 添加连接超时机制
 3. 支持UDP转发
 4. 添加访问日志
 
 ---
+
+## 运行所有测试
+
+```bash
+cd test/phase1
+go test -v
+```
 
 ## 调试工具使用
 
